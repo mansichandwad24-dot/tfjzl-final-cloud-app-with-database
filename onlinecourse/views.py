@@ -30,6 +30,6 @@ def show_exam_result(request, course_id, submission_id):
         "total_score": total_score,
     }
 
-    return render(request, "onlinecourse/exam_result.html", context)
+    return render(request, "onlinecourse/exam_result.html", context )
 
 
