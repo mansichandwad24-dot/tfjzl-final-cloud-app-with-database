@@ -14,21 +14,28 @@ def submit(request, course_id):
         return redirect("onlinecourse:show_exam_result", course.id, submission.id)
 
 def show_exam_result(request, course_id, submission_id):
+    context = {}
     course = get_object_or_404(Course, pk=course_id)
     submission = get_object_or_404(Submission, pk=submission_id)
-
-    questions = Question.objects.filter(course=course)
+    
+    # Extract selected choice IDs from the submission
+    selected_ids = [choice.id for choice in submission.choices.all()]
+    
     total_score = 0
+    possible_score = 0
+    
+    # Calculate total and possible scores
+    for question in course.question_set.all():
+        possible_score += question.grade
+        if question.is_get_score(selected_ids):
+            total_score += question.grade
+            
+    context['course'] = course
+    context['grade'] = total_score
+    context['possible'] = possible_score
+    context['submission'] = submission
 
-    for question in questions:
-        total_score += question.grade if question.is_get_score(submission) else 0
-
-    context = {
-        "course": course,
-        "submission": submission,
-        "questions": questions,
-        "total_score": total_score,
-    }
+    return render(request, 'onlinecourse/exam_result_bootstrap.html', context)
 
     return render(request, "onlinecourse/exam_result.html", context)
 
